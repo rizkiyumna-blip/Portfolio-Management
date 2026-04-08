@@ -145,8 +145,8 @@ if st.session_state.get('logged_in'):
 # --- LOGIKA TAMPILAN UTAMA ---
 if not st.session_state.logged_in:
     # HALAMAN LOGIN & REGISTER
-    st.title("🚀 Portfolio & Trading Journal SaaS")
-    st.subheader("Silakan masuk untuk mengakses jurnal pribadi Anda.")
+    st.title("Portfolio Management")
+    st.subheader("Silakan masuk untuk membangun portfolio investasi Anda.")
     
     tab_login, tab_signup = st.tabs(["Login", "Buat Akun Baru"])
     
