@@ -547,7 +547,6 @@ else:
 
     elif menu == "Input Trading":
         st.title("Input Data Trading & Cashflow")
-        
         col1, col2 = st.columns(2)
         
         # --- Form 1: Input Log Trading ---
@@ -560,29 +559,23 @@ else:
                 t_exit = st.date_input("Tanggal Exit")
                 pnl = st.number_input("PnL Bersih (USD)", step=1.0)
                 
-                # --- KODE BARU: KIRIM DATA KE SUPABASE ---
-        if st.button("Simpan Data Trading", use_container_width=True):
-            
-            # 1. Siapkan "Paket Data" (Dictionary) agar sesuai dengan kolom Supabase
-            new_trade = {
-                "user_id": st.session_state.user_info.id, # Sangat penting! Ini KTP digital Anda
-                "tanggal_entry": str(tgl_entry),
-                "pair": pair,
-                "position": position,
-                "tanggal_exit": str(tgl_exit) if tgl_exit else None, # Bisa kosong jika trade masih berjalan
-                "pnl": float(pnl)
-            }
-            
-            try:
-                # 2. Tembakkan paket data ke tabel 'trades' di Supabase
-                conn.table("trades").insert(new_trade).execute()
-                
-                # 3. Refresh memori aplikasi dengan data terbaru dari Cloud
-                st.session_state.trades = fetch_supabase_data("trades")
-                
-                st.success("🔥 Data Trading Berhasil Mendarat di Cloud Database!")
-            except Exception as e:
-                st.error(f"Gagal menyimpan ke database: {e}")
+                if st.form_submit_button("Simpan Trade"):
+                    # 1. Siapkan "Paket Data" dengan NAMA VARIABEL YANG BENAR
+                    new_trade = {
+                        "user_id": st.session_state.user_info.id, 
+                        "tanggal_entry": str(t_entry),  # Variabel Anda: t_entry
+                        "pair": pair,
+                        "position": pos,                # Variabel Anda: pos
+                        "tanggal_exit": str(t_exit) if t_exit else None, # Variabel Anda: t_exit
+                        "pnl": float(pnl)
+                    }
+                    
+                    try:
+                        conn.table("trades").insert(new_trade).execute()
+                        st.session_state.trades = fetch_supabase_data("trades")
+                        st.success(f"🔥 Trade {pair} berhasil mendarat di Cloud!")
+                    except Exception as e:
+                        st.error(f"Gagal menyimpan ke database: {e}")
 
         # --- Form 2: Input Cashflow (Deposit/Withdraw) ---
         with col2:
@@ -593,12 +586,20 @@ else:
                 c_nom = st.number_input("Nominal (USD)", min_value=0.0)
                 
                 if st.form_submit_button("Simpan Cashflow"):
-                    val = c_nom if c_tipe == "Deposit" else -c_nom
-                    new_c = pd.DataFrame([{"Tanggal": str(c_tgl), "Tipe": c_tipe, "Nominal": val}])
-                    st.session_state.cash = pd.concat([st.session_state.cash, new_c], ignore_index=True)
-                    st.session_state.cash.to_csv(CASH_FILE, index=False)
-                    st.success(f"Data {c_tipe} berhasil dicatat!")
-                    st.rerun()
+                    # Paket Data untuk Cashflow
+                    new_cash = {
+                        "user_id": st.session_state.user_info.id,
+                        "tanggal": str(c_tgl),
+                        "tipe": c_tipe,
+                        "nominal": float(c_nom)
+                    }
+                    
+                    try:
+                        conn.table("cashflow").insert(new_cash).execute()
+                        st.session_state.cash = fetch_supabase_data("cashflow")
+                        st.success(f"💰 {c_tipe} sebesar {c_nom} berhasil dicatat di Cloud!")
+                    except Exception as e:
+                        st.error(f"Gagal mencatat cashflow: {e}")
 
         # ==========================================
         # FITUR HAPUS DATA (KOREKSI TYPO) - FULL WIDTH
