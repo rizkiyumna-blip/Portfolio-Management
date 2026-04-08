@@ -300,7 +300,7 @@ else:
         # 1. KALKULASI METRIK UTAMA
         total_depo = df_cash[df_cash['tipe'] == 'Deposit']['nominal'].sum() if not df_cash.empty else 0
         total_wd = df_cash[df_cash['tipe'] == 'Withdraw']['nominal'].sum() if not df_cash.empty else 0
-        total_pnl = df_trades['pnL'].sum() if not df_trades.empty else 0
+        total_pnl = df_trades['pnl'].sum() if not df_trades.empty else 0
         
         current_balance = total_depo - total_wd + total_pnl
         
@@ -308,7 +308,7 @@ else:
         st.markdown("### Ringkasan Akun")
         col1, col2, col3 = st.columns(3)
         
-        # Menghitung Persentase PnL (Mencegah pembagian dengan nol)
+        # Menghitung Persentase pnl (Mencegah pembagian dengan nol)
         net_deposit = total_depo - total_wd
         if net_deposit > 0:
             pnl_pct = (total_pnl / net_deposit) * 100
@@ -319,7 +319,7 @@ else:
             st.metric(label="Total Balance (USD)", value=f"${current_balance:,.2f}")
         with col2:
             # Delta sekarang menampilkan persentase (%)
-            st.metric(label="Total PnL Bersih", value=f"${total_pnl:,.2f}", delta=f"{pnl_pct:.2f}%")
+            st.metric(label="Total pnl Bersih", value=f"${total_pnl:,.2f}", delta=f"{pnl_pct:.2f}%")
         with col3:
             st.metric(label="Total Deposit Bersih", value=f"${net_deposit:,.2f}")
             
@@ -327,7 +327,7 @@ else:
         
         if not df_trades.empty or not df_cash.empty:
             st.subheader("Equity Curve (Growth)")
-            trades_flow = df_trades[['tanggal exit', 'PnL']].rename(columns={'tanggal exit': 'tanggal', 'PnL': 'Nominal'}) if not df_trades.empty else pd.DataFrame()
+            trades_flow = df_trades[['tanggal exit', 'pnl']].rename(columns={'tanggal exit': 'tanggal', 'pnl': 'Nominal'}) if not df_trades.empty else pd.DataFrame()
             cash_flow = df_cash[['tanggal', 'Nominal']] if not df_cash.empty else pd.DataFrame()
             
             equity_df = pd.concat([trades_flow, cash_flow])
@@ -366,7 +366,7 @@ else:
                 st.subheader("Global Trading Statistics")
                 
                 # Logika Consecutive Win/Loss
-                pnl_list = df_trades['PnL'].tolist()
+                pnl_list = df_trades['pnl'].tolist()
                 def get_max_streak(lst, win=True):
                     max_s = current_s = 0
                     for val in lst:
@@ -378,14 +378,14 @@ else:
 
                 # Kalkulasi Global
                 total_trades = len(df_trades)
-                win_trades = df_trades[df_trades['PnL'] > 0]
-                loss_trades = df_trades[df_trades['PnL'] <= 0]
+                win_trades = df_trades[df_trades['pnl'] > 0]
+                loss_trades = df_trades[df_trades['pnl'] <= 0]
                 
                 winrate = (len(win_trades) / total_trades) * 100 if total_trades > 0 else 0
-                avg_win = win_trades['PnL'].mean() if not win_trades.empty else 0
-                avg_loss = loss_trades['PnL'].mean() if not loss_trades.empty else 0
-                best_trade = df_trades['PnL'].max()
-                worst_trade = df_trades['PnL'].min()
+                avg_win = win_trades['pnl'].mean() if not win_trades.empty else 0
+                avg_loss = loss_trades['pnl'].mean() if not loss_trades.empty else 0
+                best_trade = df_trades['pnl'].max()
+                worst_trade = df_trades['pnl'].min()
                 cons_win = get_max_streak(pnl_list, True)
                 cons_loss = get_max_streak(pnl_list, False)
 
@@ -446,16 +446,16 @@ else:
                 
                 # Mengelompokkan data berdasarkan Pair
                 pair_stats = df_trades.groupby('Pair').agg(
-                    Total_Trade=('PnL', 'count'), 
-                    Win_Count=('PnL', lambda x: (x > 0).sum()), 
-                    Total_PnL=('PnL', 'sum')
+                    Total_Trade=('pnl', 'count'), 
+                    Win_Count=('pnl', lambda x: (x > 0).sum()), 
+                    Total_pnl=('pnl', 'sum')
                 ).reset_index()
                 
                 # Hitung Winrate
                 pair_stats['Winrate'] = (pair_stats['Win_Count'] / pair_stats['Total_Trade']) * 100
                 
                 # Buat DataFrame khusus untuk ditampilkan
-                pair_display = pair_stats[['Pair', 'Total_Trade', 'Winrate', 'Total_PnL']]
+                pair_display = pair_stats[['Pair', 'Total_Trade', 'Winrate', 'Total_pnl']]
                 
                 # Tampilkan dengan Streamlit dataframe dan konfigurasi USD
                 st.dataframe(
@@ -464,7 +464,7 @@ else:
                         "Pair": "Ticker / Pair",
                         "Total_Trade": "Total Trade",
                         "Winrate": st.column_config.NumberColumn("Winrate (%)", format="%.1f%%"),
-                        "Total_PnL": st.column_config.NumberColumn("Total PnL (USD)", format="$%.2f")
+                        "Total_pnl": st.column_config.NumberColumn("Total pnl (USD)", format="$%.2f")
                     },
                     hide_index=True, 
                     use_container_width=True
@@ -495,11 +495,11 @@ else:
                     
                 if filter_hasil != "Semua Hasil":
                     if filter_hasil == "Win (Profit)":
-                        df_tampil = df_tampil[df_tampil['PnL'] > 0]
+                        df_tampil = df_tampil[df_tampil['pnl'] > 0]
                     elif filter_hasil == "Loss (Rugi)":
-                        df_tampil = df_tampil[df_tampil['PnL'] < 0]
+                        df_tampil = df_tampil[df_tampil['pnl'] < 0]
                     else: # Break Even
-                        df_tampil = df_tampil[df_tampil['PnL'] == 0]
+                        df_tampil = df_tampil[df_tampil['pnl'] == 0]
                 
                 # Menampilkan tabel jika data setelah difilter tidak kosong
                 if not df_tampil.empty:
@@ -510,8 +510,8 @@ else:
                 # --- TAMBAHAN BARU: Membuang kolom "Unnamed" ---
                     df_tampil = df_tampil.loc[:, ~df_tampil.columns.str.contains('^Unnamed')]
                     
-                    # Ubah nama kolom PnL langsung di Pandas agar headernya rapi
-                    df_tampil = df_tampil.rename(columns={"PnL": "PnL (USD)"})
+                    # Ubah nama kolom pnl langsung di Pandas agar headernya rapi
+                    df_tampil = df_tampil.rename(columns={"pnl": "pnl (USD)"})
                     
                     # --- FUNGSI PEWARNAAN KONDISIONAL ---
                     def color_profit_loss(val):
@@ -527,8 +527,8 @@ else:
                             return ''
 
                     # Menerapkan warna dan format Dollar menggunakan Pandas Styler
-                    styled_df = df_tampil.style.map(color_profit_loss, subset=['PnL (USD)']).format({
-                        'PnL (USD)': '${:,.2f}'
+                    styled_df = df_tampil.style.map(color_profit_loss, subset=['pnl (USD)']).format({
+                        'pnl (USD)': '${:,.2f}'
                     })
                         
                     # Menampilkan tabel yang sudah di-style
@@ -557,7 +557,7 @@ else:
                 pair = st.text_input("Pair (Contoh: EURUSD)").upper()
                 pos = st.selectbox("Position", ["Long", "Short"])
                 t_exit = st.date_input("tanggal exit")
-                pnl = st.number_input("PnL Bersih (USD)", step=1.0)
+                pnl = st.number_input("pnl Bersih (USD)", step=1.0)
                 
                 if st.form_submit_button("Simpan Trade"):
                     # 1. Siapkan "Paket Data" dengan NAMA VARIABEL YANG BENAR
@@ -862,7 +862,7 @@ else:
                         nilai_kini_idr = qty_sekarang * current_price
                         mata_uang = "IDR"
                     
-                    # Menghitung PnL
+                    # Menghitung pnl
                     pnl_idr = nilai_kini_idr - modal_idr
                     return_pct = (pnl_idr / modal_idr * 100) if modal_idr > 0 else 0
                     
@@ -1150,7 +1150,7 @@ else:
         
         total_depo = df_cash[df_cash['tipe'] == 'Deposit']['nominal'].sum() if not df_cash.empty else 0
         total_wd = df_cash[df_cash['tipe'] == 'Withdraw']['nominal'].sum() if not df_cash.empty else 0
-        total_pnl = df_trades['PnL'].sum() if not df_trades.empty else 0
+        total_pnl = df_trades['pnl'].sum() if not df_trades.empty else 0
         
         equity_usd = total_depo - total_wd + total_pnl
         equity_idr = equity_usd * FIX_RATE
