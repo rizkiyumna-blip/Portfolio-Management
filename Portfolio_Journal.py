@@ -648,58 +648,6 @@ else:
         else:
             st.info(f"Data pada {jenis_data} masih kosong.")
 
-    elif menu == "Database Trading":
-        st.title("Manajemen Database Trading")
-        
-        # Membagi menjadi dua tab agar rapi
-        tab1, tab2 = st.tabs(["Trades Journal", "Cashflow History"])
-        
-        with tab1:
-            st.caption("💡 Tips: Klik sel untuk mengedit angka/teks. Untuk menghapus baris yang salah, centang kotak di sebelah kiri lalu tekan tombol 'Delete' pada keyboard.")
-            
-            edited_trades = st.data_editor(
-                st.session_state.trades, 
-                num_rows="dynamic", 
-                use_container_width=True, 
-                key="editor_trades",
-                column_config={
-                    "PnL": st.column_config.NumberColumn("PnL (USD)", format="$%.2f")
-                }
-            )
-            
-            # Cari bagian tombol simpan trading, ubah isinya menjadi:
-            if st.button("Simpan Data Trading"):
-                new_trade = {
-                    "user_id": st.session_state.user_info.id, # WAJIB ada agar data tidak tertukar
-                    "tanggal_entry": str(tgl_entry),
-                    "pair": pair,
-                    "position": position,
-                    "tanggal_exit": str(tgl_exit) if tgl_exit else None,
-                    "pnl": float(pnl)
-                }
-                conn.table("trades").insert(new_trade).execute()
-                st.session_state.trades = fetch_supabase_data("trades") # Refresh data di layar
-                st.success("Tersimpan di Cloud!")
-
-        with tab2:
-            st.caption("💡 Tips: Kamu juga bisa menambah data baru dengan mengklik baris kosong paling bawah.")
-            
-            edited_cash = st.data_editor(
-                st.session_state.cash, 
-                num_rows="dynamic", 
-                use_container_width=True, 
-                key="editor_cash",
-                column_config={
-                    "Nominal": st.column_config.NumberColumn("Nominal (USD)", format="$%.2f")
-                }
-            )
-            
-            if st.button("Simpan Perubahan Cashflow"):
-                st.session_state.cash = edited_cash
-                st.session_state.cash.to_csv(CASH_FILE, index=False)
-                st.success("Database Cashflow berhasil diupdate!")
-                st.rerun()
-
     elif menu == "Jurnal Strategi":
         st.title("Catatan Strategi & Trading Plan")
         st.write("Gunakan halaman ini untuk mencatat *checklist* evaluasi sebelum melakukan *entry*.")
@@ -789,22 +737,27 @@ else:
                 jumlah_input = st.number_input(f"Jumlah Pembelian ({satuan})", min_value=0.0, step=0.01)
                 
                 if st.form_submit_button("Simpan Investasi"):
-                    # Menghitung jumlah aktual
+                    # Menghitung jumlah aktual berdasarkan pengali (contoh: Lot -> Lembar)
                     jumlah_aktual = jumlah_input * pengali
                     
-                    new_inv = pd.DataFrame([{
-                        "Tanggal": str(t_inv), 
-                        "Kelas Aset": kelas_aset,
-                        "Ticker": ticker, 
-                        "Action": action_inv, 
-                        "Harga": harga_inv, 
-                        "Jumlah": jumlah_aktual
-                    }])
+                    # --- KODE BARU: KIRIM DATA KE SUPABASE CLOUD ---
+                    new_invest = {
+                        "user_id": st.session_state.user_info.id, # Identitas user
+                        "tanggal": str(t_inv), 
+                        "kelas_aset": kelas_aset,
+                        "ticker": ticker, 
+                        "action": action_inv, 
+                        "harga": float(harga_inv), 
+                        "jumlah": float(jumlah_aktual)
+                    }
                     
-                    st.session_state.investing = pd.concat([st.session_state.investing, new_inv], ignore_index=True)
-                    st.session_state.investing.to_csv('investing.csv', index=False)
-                    st.success(f"Data {kelas_aset} ({ticker}) berhasil disimpan!")
-                    st.rerun()
+                    try:
+                        conn.table("investing").insert(new_invest).execute()
+                        # Refresh data di session state agar tabel di halaman lain langsung update
+                        st.session_state.investing = fetch_supabase_data("investing")
+                        st.success(f"✅ Data {kelas_aset} ({ticker}) berhasil mendarat di Cloud!")
+                    except Exception as e:
+                        st.error(f"Gagal menyimpan investasi: {e}")
                     
         with col2:
             st.info("💡 **Panduan Diversifikasi Aset:**\n\n"
