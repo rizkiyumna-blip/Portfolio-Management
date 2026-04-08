@@ -1172,14 +1172,14 @@ else:
                 kurs_idr = 15500.0 # Fallback
                 
             for (kelas, ticker), group in df_inv.groupby(['kelas_aset', 'ticker']):
-                total_beli = group[group['Action'] == 'Buy']['Jumlah'].sum()
-                total_jual = group[group['Action'] == 'Sell']['Jumlah'].sum()
+                total_beli = group[group['action'] == 'Buy']['jumlah'].sum()
+                total_jual = group[group['action'] == 'Sell']['jumlah'].sum()
                 qty_sekarang = total_beli - total_jual
                 
                 if qty_sekarang > 0:
                     # Cari harga beli rata-rata
-                    df_beli = group[group['Action'] == 'Buy']
-                    avg_price = (df_beli['harga'] * df_beli['Jumlah']).sum() / df_beli['Jumlah'].sum() if not df_beli.empty else 0
+                    df_beli = group[group['action'] == 'Buy']
+                    avg_price = (df_beli['harga'] * df_beli['jumlah']).sum() / df_beli['jumlah'].sum() if not df_beli.empty else 0
                     
                     # Tarik harga live
                     current_price = avg_price
