@@ -327,8 +327,8 @@ else:
         
         if not df_trades.empty or not df_cash.empty:
             st.subheader("Equity Curve (Growth)")
-            trades_flow = df_trades[['tanggal exit', 'pnl']].rename(columns={'tanggal exit': 'tanggal', 'pnl': 'Nominal'}) if not df_trades.empty else pd.DataFrame()
-            cash_flow = df_cash[['tanggal', 'Nominal']] if not df_cash.empty else pd.DataFrame()
+            trades_flow = df_trades[['tanggal_exit', 'pnl']].rename(columns={'tanggal_exit': 'tanggal', 'pnl': 'nominal'}) if not df_trades.empty else pd.DataFrame()
+            cash_flow = df_cash[['tanggal', 'nominal']] if not df_cash.empty else pd.DataFrame()
             
             equity_df = pd.concat([trades_flow, cash_flow])
             if not equity_df.empty:
@@ -337,7 +337,7 @@ else:
                 equity_df = equity_df.dropna(subset=['tanggal'])
                 
                 equity_df = equity_df.sort_values('tanggal')
-                equity_df['Balance'] = equity_df['Nominal'].cumsum()
+                equity_df['Balance'] = equity_df['nominal'].cumsum()
 
                 # --- MAKEOVER CHART AESTHETIC ---
                 fig = px.line(equity_df, x='tanggal', y='Balance', markers=True, 
@@ -361,7 +361,7 @@ else:
 
             st.divider()
 
-            # --- STATISTIK GLOBAL & PER PAIR ---
+            # --- STATISTIK GLOBAL & PER pair ---
             if not df_trades.empty:
                 st.subheader("Global Trading Statistics")
                 
@@ -441,11 +441,11 @@ else:
                     """, unsafe_allow_html=True)
                 st.divider()
                 
-                # --- TABEL PER PAIR ---
-                st.subheader("Detail Performa per Pair")
+                # --- TABEL PER pair ---
+                st.subheader("Detail Performa per pair")
                 
-                # Mengelompokkan data berdasarkan Pair
-                pair_stats = df_trades.groupby('Pair').agg(
+                # Mengelompokkan data berdasarkan pair
+                pair_stats = df_trades.groupby('pair').agg(
                     Total_Trade=('pnl', 'count'), 
                     Win_Count=('pnl', lambda x: (x > 0).sum()), 
                     Total_pnl=('pnl', 'sum')
@@ -455,13 +455,13 @@ else:
                 pair_stats['Winrate'] = (pair_stats['Win_Count'] / pair_stats['Total_Trade']) * 100
                 
                 # Buat DataFrame khusus untuk ditampilkan
-                pair_display = pair_stats[['Pair', 'Total_Trade', 'Winrate', 'Total_pnl']]
+                pair_display = pair_stats[['pair', 'Total_Trade', 'Winrate', 'Total_pnl']]
                 
                 # Tampilkan dengan Streamlit dataframe dan konfigurasi USD
                 st.dataframe(
                     pair_display,
                     column_config={
-                        "Pair": "Ticker / Pair",
+                        "pair": "Ticker / pair",
                         "Total_Trade": "Total Trade",
                         "Winrate": st.column_config.NumberColumn("Winrate (%)", format="%.1f%%"),
                         "Total_pnl": st.column_config.NumberColumn("Total pnl (USD)", format="$%.2f")
@@ -481,8 +481,8 @@ else:
                 col_f1, col_f2 = st.columns(2)
                 with col_f1:
                     # Ambil daftar pair unik yang pernah ditradingkan
-                    list_pair = ["Semua Pair"] + list(df_trades['Pair'].unique())
-                    filter_pair = st.selectbox("🔍 Filter Pair Aset:", list_pair)
+                    list_pair = ["Semua pair"] + list(df_trades['pair'].unique())
+                    filter_pair = st.selectbox("🔍 Filter pair Aset:", list_pair)
                 
                 with col_f2:
                     filter_hasil = st.selectbox("Filter Hasil Trade:", ["Semua Hasil", "Win (Profit)", "Loss (Rugi)", "Break Even"])
@@ -490,8 +490,8 @@ else:
                 # Menerapkan Logika Filter ke Data
                 df_tampil = df_trades.copy()
                 
-                if filter_pair != "Semua Pair":
-                    df_tampil = df_tampil[df_tampil['Pair'] == filter_pair]
+                if filter_pair != "Semua pair":
+                    df_tampil = df_tampil[df_tampil['pair'] == filter_pair]
                     
                 if filter_hasil != "Semua Hasil":
                     if filter_hasil == "Win (Profit)":
@@ -504,8 +504,8 @@ else:
                 # Menampilkan tabel jika data setelah difilter tidak kosong
                 if not df_tampil.empty:
                     # Mengurutkan tanggal dari yang paling baru (Descending)
-                    if 'tanggal exit' in df_tampil.columns:
-                        df_tampil = df_tampil.sort_values(by='tanggal exit', ascending=False)
+                    if 'tanggal_exit' in df_tampil.columns:
+                        df_tampil = df_tampil.sort_values(by='tanggal_exit', ascending=False)
                     
                 # --- TAMBAHAN BARU: Membuang kolom "Unnamed" ---
                     df_tampil = df_tampil.loc[:, ~df_tampil.columns.str.contains('^Unnamed')]
@@ -554,7 +554,7 @@ else:
             with st.form("trade_form"):
                 st.subheader("Input Log Trading")
                 t_entry = st.date_input("tanggal entry")
-                pair = st.text_input("Pair (Contoh: EURUSD)").upper()
+                pair = st.text_input("pair (Contoh: EURUSD)").upper()
                 pos = st.selectbox("Position", ["Long", "Short"])
                 t_exit = st.date_input("tanggal exit")
                 pnl = st.number_input("pnl Bersih (USD)", step=1.0)
