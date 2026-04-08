@@ -18,7 +18,7 @@ st.set_page_config(page_title="Personal Portfolio", layout="wide")
 conn = st.connection(
     "supabase", 
     type=SupabaseConnection,
-    url="https://jylesnpjqmrtkrxqzwcj.supabase.co", 
+    url="https://jylesnpjqmrtkrxqzwcj.supabase.co",
     key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5bGVzbnBqcW1ydGtyeHF6d2NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MzM4MjEsImV4cCI6MjA5MTIwOTgyMX0.uQOW5npSPSN95LbJEfpn3Hf8rJCiYkaxErS2P1kLLDU"
 )
 
@@ -137,24 +137,22 @@ INVEST_FILE = "investing.csv"
 INVESTING_FILE = 'investing.csv'
 
 # --- FUNGSI DATA ---
-def load_data(file, columns):
-    if os.path.exists(file):
-        return pd.read_csv(file)
-    return pd.DataFrame(columns=columns)
+# Ganti fungsi load_data menjadi ini:
+def fetch_supabase_data(table_name):
+    try:
+        res = conn.table(table_name).select("*").execute()
+        return pd.DataFrame(res.data)
+    except Exception as e:
+        return pd.DataFrame() 
 
-if 'trades' not in st.session_state:
-    st.session_state.trades = load_data(TRADE_FILE, ["Tanggal Entry", "Pair", "Position", "Tanggal Exit", "PnL"])
-if 'cash' not in st.session_state:
-    st.session_state.cash = load_data(CASH_FILE, ["Tanggal", "Tipe", "Nominal"])
-if 'invest' not in st.session_state:
-    # Action: Buy/Sell
-    st.session_state.invest = load_data(INVEST_FILE, ["Tanggal", "Ticker", "Action", "Harga", "Lot"])
-if 'investing' not in st.session_state:
-    if os.path.exists(INVESTING_FILE):
-        st.session_state.investing = pd.read_csv(INVESTING_FILE)
-    else:
-        # Karena kita sudah jadi Multi-Aset, kita buat kerangka kolom yang baru:
-        st.session_state.investing = pd.DataFrame(columns=["Tanggal", "Kelas Aset", "Ticker", "Action", "Harga", "Jumlah"])
+# Update bagian inisialisasi (Letakkan di dalam blok 'else:' setelah login berhasil)
+if st.session_state.logged_in:
+    if 'trades' not in st.session_state:
+        st.session_state.trades = fetch_supabase_data("trades")
+    if 'cash' not in st.session_state:
+        st.session_state.cash = fetch_supabase_data("cashflow")
+    if 'investing' not in st.session_state:
+        st.session_state.investing = fetch_supabase_data("investing")
 
 # --- LOGIKA TAMPILAN UTAMA ---
 if not st.session_state.logged_in:
@@ -657,11 +655,19 @@ else:
                 }
             )
             
-            if st.button("Simpan Perubahan Trades"):
-                st.session_state.trades = edited_trades
-                st.session_state.trades.to_csv(TRADE_FILE, index=False)
-                st.success("Database Trades berhasil diupdate!")
-                st.rerun()
+            # Cari bagian tombol simpan trading, ubah isinya menjadi:
+            if st.button("Simpan Data Trading"):
+                new_trade = {
+                    "user_id": st.session_state.user_info.id, # WAJIB ada agar data tidak tertukar
+                    "tanggal_entry": str(tgl_entry),
+                    "pair": pair,
+                    "position": position,
+                    "tanggal_exit": str(tgl_exit) if tgl_exit else None,
+                    "pnl": float(pnl)
+                }
+                conn.table("trades").insert(new_trade).execute()
+                st.session_state.trades = fetch_supabase_data("trades") # Refresh data di layar
+                st.success("Tersimpan di Cloud!")
 
         with tab2:
             st.caption("💡 Tips: Kamu juga bisa menambah data baru dengan mengklik baris kosong paling bawah.")
