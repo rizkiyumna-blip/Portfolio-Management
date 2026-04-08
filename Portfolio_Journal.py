@@ -298,9 +298,9 @@ else:
         df_cash = st.session_state.cash
         
         # 1. KALKULASI METRIK UTAMA
-        total_depo = df_cash[df_cash['Tipe'] == 'Deposit']['Nominal'].sum() if not df_cash.empty else 0
-        total_wd = df_cash[df_cash['Tipe'] == 'Withdraw']['Nominal'].sum() if not df_cash.empty else 0
-        total_pnl = df_trades['PnL'].sum() if not df_trades.empty else 0
+        total_depo = df_cash[df_cash['tipe'] == 'Deposit']['nominal'].sum() if not df_cash.empty else 0
+        total_wd = df_cash[df_cash['tipe'] == 'Withdraw']['nominal'].sum() if not df_cash.empty else 0
+        total_pnl = df_trades['pnL'].sum() if not df_trades.empty else 0
         
         current_balance = total_depo - total_wd + total_pnl
         
@@ -1148,9 +1148,9 @@ else:
         df_trades = st.session_state.trades
         df_cash = st.session_state.cash
         
-        total_depo = df_cash[df_cash['Tipe'] == 'Deposit']['Nominal'].sum() if not df_cash.empty else 0
-        total_wd = df_cash[df_cash['Tipe'] == 'Withdraw']['Nominal'].sum() if not df_cash.empty else 0
-        total_pnl = df_trades['PnL'].sum() if not df_trades.empty else 0
+        total_depo = df_cash[df_cash['tipe'] == 'Deposit']['nominal'].sum() if not df_cash.empty else 0
+        total_wd = df_cash[df_cash['tipe'] == 'Withdraw']['nominal'].sum() if not df_cash.empty else 0
+        total_pnl = df_trades['pnL'].sum() if not df_trades.empty else 0
         
         equity_usd = total_depo - total_wd + total_pnl
         equity_idr = equity_usd * FIX_RATE
