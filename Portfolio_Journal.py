@@ -1171,7 +1171,7 @@ else:
             except:
                 kurs_idr = 15500.0 # Fallback
                 
-            for (kelas, ticker), group in df_inv.groupby(['kelas aset', 'Ticker']):
+            for (kelas, ticker), group in df_inv.groupby(['kelas aset', 'ticker']):
                 total_beli = group[group['Action'] == 'Buy']['Jumlah'].sum()
                 total_jual = group[group['Action'] == 'Sell']['Jumlah'].sum()
                 qty_sekarang = total_beli - total_jual
