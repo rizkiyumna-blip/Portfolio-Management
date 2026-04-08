@@ -130,15 +130,10 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# File Database
-TRADE_FILE = "trades.csv"
-CASH_FILE = "cashflow.csv"
-INVEST_FILE = "investing.csv"
-INVESTING_FILE = 'investing.csv'
-
-# --- FUNGSI DATA ---
+# --- FUNGSI DATA CLOUD ---
 def fetch_supabase_data(table_name):
     try:
+        # Supabase otomatis memfilter data berdasarkan User ID jika RLS aktif
         res = conn.table(table_name).select("*").execute()
         return pd.DataFrame(res.data)
     except Exception as e:
@@ -565,26 +560,29 @@ else:
                 t_exit = st.date_input("Tanggal Exit")
                 pnl = st.number_input("PnL Bersih (USD)", step=1.0)
                 
-                if st.button("Simpan Data Trading", use_container_width=True):
-            # 1. Siapkan data JSON untuk Supabase
-                    new_trade = {
-                "user_id": st.session_state.user_info.id, # Penting agar data tidak tertukar!
+                # --- KODE BARU: KIRIM DATA KE SUPABASE ---
+        if st.button("Simpan Data Trading", use_container_width=True):
+            
+            # 1. Siapkan "Paket Data" (Dictionary) agar sesuai dengan kolom Supabase
+            new_trade = {
+                "user_id": st.session_state.user_info.id, # Sangat penting! Ini KTP digital Anda
                 "tanggal_entry": str(tgl_entry),
                 "pair": pair,
                 "position": position,
-                "tanggal_exit": str(tgl_exit) if tgl_exit else None,
+                "tanggal_exit": str(tgl_exit) if tgl_exit else None, # Bisa kosong jika trade masih berjalan
                 "pnl": float(pnl)
             }
             
             try:
-                # 2. Masukkan ke tabel Supabase
+                # 2. Tembakkan paket data ke tabel 'trades' di Supabase
                 conn.table("trades").insert(new_trade).execute()
                 
-                # 3. Paksa aplikasi mengambil data terbaru untuk update Dashboard
+                # 3. Refresh memori aplikasi dengan data terbaru dari Cloud
                 st.session_state.trades = fetch_supabase_data("trades")
-                st.success("✅ Data Trading Berhasil Disimpan ke Cloud Database!")
+                
+                st.success("🔥 Data Trading Berhasil Mendarat di Cloud Database!")
             except Exception as e:
-                st.error(f"Gagal menyimpan ke Cloud: {e}")
+                st.error(f"Gagal menyimpan ke database: {e}")
 
         # --- Form 2: Input Cashflow (Deposit/Withdraw) ---
         with col2:
@@ -594,19 +592,13 @@ else:
                 c_tipe = st.selectbox("Tipe", ["Deposit", "Withdraw"])
                 c_nom = st.number_input("Nominal (USD)", min_value=0.0)
                 
-                if st.button("Simpan Cashflow", use_container_width=True):
-                    new_cash = {
-                "user_id": st.session_state.user_info.id,
-                "tanggal": str(tgl_cash),
-                "tipe": tipe_cash,
-                "nominal": float(nominal_cash)
-            }
-            try:
-                conn.table("cashflow").insert(new_cash).execute()
-                st.session_state.cash = fetch_supabase_data("cashflow")
-                st.success(f"💰 {tipe_cash} sebesar {nominal_cash:,.0f} berhasil dicatat!")
-            except Exception as e:
-                st.error(f"Gagal mencatat cashflow: {e}")
+                if st.form_submit_button("Simpan Cashflow"):
+                    val = c_nom if c_tipe == "Deposit" else -c_nom
+                    new_c = pd.DataFrame([{"Tanggal": str(c_tgl), "Tipe": c_tipe, "Nominal": val}])
+                    st.session_state.cash = pd.concat([st.session_state.cash, new_c], ignore_index=True)
+                    st.session_state.cash.to_csv(CASH_FILE, index=False)
+                    st.success(f"Data {c_tipe} berhasil dicatat!")
+                    st.rerun()
 
         # ==========================================
         # FITUR HAPUS DATA (KOREKSI TYPO) - FULL WIDTH
