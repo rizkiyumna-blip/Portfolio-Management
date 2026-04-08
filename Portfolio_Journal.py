@@ -14,13 +14,7 @@ from st_supabase_connection import SupabaseConnection
 # --- 1. INI HARUS JADI PERINTAH 'st' PERTAMA ---
 st.set_page_config(page_title="Personal Portfolio", layout="wide")
 
-# --- 2. BARU BOLEH LANJUT KE PERINTAH LAINNYA ---
-conn = st.connection(
-    "supabase", 
-    type=SupabaseConnection,
-    url="https://jylesnpjqmrtkrxqzwcj.supabase.co",
-    key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5bGVzbnBqcW1ydGtyeHF6d2NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MzM4MjEsImV4cCI6MjA5MTIwOTgyMX0.uQOW5npSPSN95LbJEfpn3Hf8rJCiYkaxErS2P1kLLDU"
-)
+conn = st.connection("supabase", type=SupabaseConnection)
 
 # 2. Inisialisasi Session State untuk Login
 if "logged_in" not in st.session_state:
