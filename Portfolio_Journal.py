@@ -2,7 +2,7 @@ import requests
 import datetime
 import json 
 import os   
-
+import feedparser
 import re
 import streamlit as st
 import pandas as pd
