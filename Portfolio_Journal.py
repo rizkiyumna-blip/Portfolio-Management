@@ -300,7 +300,7 @@ else:
         # 1. KALKULASI METRIK UTAMA
         total_depo = df_cash[df_cash['tipe'] == 'Deposit']['nominal'].sum() if not df_cash.empty else 0
         total_wd = df_cash[df_cash['tipe'] == 'Withdraw']['nominal'].sum() if not df_cash.empty else 0
-        total_pnl = df_trades['PnL'].sum() if not df_trades.empty else 0
+        total_pnl = df_trades['pnL'].sum() if not df_trades.empty else 0
         
         current_balance = total_depo - total_wd + total_pnl
         
@@ -327,20 +327,20 @@ else:
         
         if not df_trades.empty or not df_cash.empty:
             st.subheader("Equity Curve (Growth)")
-            trades_flow = df_trades[['Tanggal Exit', 'PnL']].rename(columns={'Tanggal Exit': 'Tanggal', 'PnL': 'Nominal'}) if not df_trades.empty else pd.DataFrame()
-            cash_flow = df_cash[['Tanggal', 'Nominal']] if not df_cash.empty else pd.DataFrame()
+            trades_flow = df_trades[['tanggal exit', 'PnL']].rename(columns={'tanggal exit': 'tanggal', 'PnL': 'Nominal'}) if not df_trades.empty else pd.DataFrame()
+            cash_flow = df_cash[['tanggal', 'Nominal']] if not df_cash.empty else pd.DataFrame()
             
             equity_df = pd.concat([trades_flow, cash_flow])
             if not equity_df.empty:
                 # Perbaikan format tanggal agar tidak error
-                equity_df['Tanggal'] = pd.to_datetime(equity_df['Tanggal'], format='mixed', errors='coerce')
-                equity_df = equity_df.dropna(subset=['Tanggal'])
+                equity_df['tanggal'] = pd.to_datetime(equity_df['tanggal'], format='mixed', errors='coerce')
+                equity_df = equity_df.dropna(subset=['tanggal'])
                 
-                equity_df = equity_df.sort_values('Tanggal')
+                equity_df = equity_df.sort_values('tanggal')
                 equity_df['Balance'] = equity_df['Nominal'].cumsum()
 
                 # --- MAKEOVER CHART AESTHETIC ---
-                fig = px.line(equity_df, x='Tanggal', y='Balance', markers=True, 
+                fig = px.line(equity_df, x='tanggal', y='Balance', markers=True, 
                             template="plotly_dark")
 
                 fig.update_traces(
@@ -504,8 +504,8 @@ else:
                 # Menampilkan tabel jika data setelah difilter tidak kosong
                 if not df_tampil.empty:
                     # Mengurutkan tanggal dari yang paling baru (Descending)
-                    if 'Tanggal Exit' in df_tampil.columns:
-                        df_tampil = df_tampil.sort_values(by='Tanggal Exit', ascending=False)
+                    if 'tanggal exit' in df_tampil.columns:
+                        df_tampil = df_tampil.sort_values(by='tanggal exit', ascending=False)
                     
                 # --- TAMBAHAN BARU: Membuang kolom "Unnamed" ---
                     df_tampil = df_tampil.loc[:, ~df_tampil.columns.str.contains('^Unnamed')]
@@ -553,10 +553,10 @@ else:
         with col1:
             with st.form("trade_form"):
                 st.subheader("Input Log Trading")
-                t_entry = st.date_input("Tanggal Entry")
+                t_entry = st.date_input("tanggal entry")
                 pair = st.text_input("Pair (Contoh: EURUSD)").upper()
                 pos = st.selectbox("Position", ["Long", "Short"])
-                t_exit = st.date_input("Tanggal Exit")
+                t_exit = st.date_input("tanggal exit")
                 pnl = st.number_input("PnL Bersih (USD)", step=1.0)
                 
                 if st.form_submit_button("Simpan Trade"):
@@ -581,7 +581,7 @@ else:
         with col2:
             with st.form("cash_form"):
                 st.subheader("Input Cashflow (Deposit/WD)")
-                c_tgl = st.date_input("Tanggal")
+                c_tgl = st.date_input("tanggal")
                 c_tipe = st.selectbox("Tipe", ["Deposit", "Withdraw"])
                 c_nom = st.number_input("Nominal (USD)", min_value=0.0)
                 
@@ -701,8 +701,8 @@ else:
         with col1:
             st.subheader("Catat Portofolio Baru")
             
-            # 1. Pilihan Kelas Aset (DITARUH DI LUAR FORM AGAR BISA BERUBAH REAL-TIME!)
-            kelas_aset = st.selectbox("Pilih Kelas Aset:", ["Saham Indonesia", "Kripto", "Emas", "Reksadana", "Obligasi (SBN)"])
+            # 1. Pilihan kelas aset (DITARUH DI LUAR FORM AGAR BISA BERUBAH REAL-TIME!)
+            kelas_aset = st.selectbox("Pilih kelas aset:", ["Saham Indonesia", "Kripto", "Emas", "Reksadana", "Obligasi (SBN)"])
             
             # 2. Form Input (Label akan otomatis mengikuti kelas aset di atas)
             with st.form("invest_form"):
@@ -729,11 +729,11 @@ else:
                     pengali = 1
                     mata_uang = "USD"  # <-- Tambahan mata uang (Jika antam bisa diganti IDR)
                 
-                t_inv = st.date_input("Tanggal Transaksi")
+                t_inv = st.date_input("tanggal Transaksi")
                 action_inv = st.selectbox("Aksi Transaksi", ["Buy", "Sell"])
                 
-                # --- LABEL KINI 100% DINAMIS MENGKUTI KELAS ASET ---
-                harga_inv = st.number_input(f"Harga Beli/Jual per {satuan} ({mata_uang})", min_value=0.0, step=100.0)
+                # --- LABEL KINI 100% DINAMIS MENGKUTI kelas aset ---
+                harga_inv = st.number_input(f"harga Beli/Jual per {satuan} ({mata_uang})", min_value=0.0, step=100.0)
                 jumlah_input = st.number_input(f"Jumlah Pembelian ({satuan})", min_value=0.0, step=0.01)
                 
                 if st.form_submit_button("Simpan Investasi"):
@@ -763,7 +763,7 @@ else:
             st.info("💡 **Panduan Diversifikasi Aset:**\n\n"
                     "- **Saham:** Input dalam satuan *Lot*. Sistem otomatis menyimpannya sebagai lembar saham.\n\n"
                     "- **Kripto & Emas:** Mendukung input desimal (Contoh: Beli 0.05 BTC atau 2.5 Gram Emas).\n\n"
-                    "- **Reksadana/Obligasi:** Cukup masukkan Nama Produk, Harga NAV/Unit rata-rata, dan Jumlah Unit. Aset ini bersifat statis dan tidak ditarik dari Yahoo Finance setiap detik.")
+                    "- **Reksadana/Obligasi:** Cukup masukkan Nama Produk, harga NAV/Unit rata-rata, dan Jumlah Unit. Aset ini bersifat statis dan tidak ditarik dari Yahoo Finance setiap detik.")
 
         # ==========================================
         # FITUR HAPUS DATA INVESTASI (FULL WIDTH)
@@ -813,7 +813,7 @@ else:
                 kurs_idr_data = yf.Ticker("IDR=X").history(period="1d")
                 kurs_idr = kurs_idr_data['Close'].iloc[-1]
             except:
-                kurs_idr = 15500.0 # Harga fallback jika sedang offline/gagal
+                kurs_idr = 15500.0 # harga fallback jika sedang offline/gagal
                 st.warning("Gagal menarik kurs live. Menggunakan kurs fallback Rp 15.500/USD")
 
             # Menampilkan badge kurs hari ini
@@ -824,22 +824,22 @@ else:
             total_modal_semua_idr = 0.0
             total_nilai_semua_idr = 0.0
             
-            # Mengelompokkan berdasarkan Kelas Aset dan Ticker
-            for (kelas, ticker), group in df_inv.groupby(['Kelas Aset', 'Ticker']):
+            # Mengelompokkan berdasarkan kelas aset dan Ticker
+            for (kelas, ticker), group in df_inv.groupby(['kelas aset', 'Ticker']):
                 # Menghitung sisa barang (Buy - Sell)
                 total_beli = group[group['Action'] == 'Buy']['Jumlah'].sum()
                 total_jual = group[group['Action'] == 'Sell']['Jumlah'].sum()
                 qty_sekarang = total_beli - total_jual
                 
                 if qty_sekarang > 0:
-                    # Menghitung Harga Beli Rata-Rata (Weighted Average)
+                    # Menghitung harga Beli Rata-Rata (Weighted Average)
                     df_beli = group[group['Action'] == 'Buy']
                     if not df_beli.empty:
-                        avg_price = (df_beli['Harga'] * df_beli['Jumlah']).sum() / df_beli['Jumlah'].sum()
+                        avg_price = (df_beli['harga'] * df_beli['Jumlah']).sum() / df_beli['Jumlah'].sum()
                     else:
                         avg_price = 0
                     
-                    # Menarik Harga Saat Ini (Live)
+                    # Menarik harga Saat Ini (Live)
                     current_price = avg_price # Default ke harga beli jika aset statis
                     if kelas in ["Saham Indonesia", "Kripto", "Emas"]:
                         try:
@@ -850,7 +850,7 @@ else:
                         except:
                             pass # Tetap pakai harga rata-rata jika YF error/ticker salah
                     
-                    # Konversi ke Rupiah Berdasarkan Kelas Aset
+                    # Konversi ke Rupiah Berdasarkan kelas aset
                     if kelas in ["Kripto", "Emas"]:
                         # Aset dalam USD (Floating Rate)
                         modal_idr = (qty_sekarang * avg_price) * kurs_idr
@@ -870,12 +870,12 @@ else:
                     total_nilai_semua_idr += nilai_kini_idr
                     
                     portfolio_summary.append({
-                        "Kelas Aset": kelas,
+                        "kelas aset": kelas,
                         "Ticker": ticker,
                         "Jumlah Satuan": qty_sekarang,
                         "Mata Uang": mata_uang,
-                        "Harga Rata2": avg_price,
-                        "Harga Live": current_price,
+                        "harga Rata2": avg_price,
+                        "harga Live": current_price,
                         "Nilai Total (IDR)": nilai_kini_idr,
                         "Return (%)": return_pct
                     })
@@ -903,11 +903,11 @@ else:
                 # Trik 3 kolom: Kolom kiri(1), Tengah(2), Kanan(1). Grafik dimasukkan ke tengah agar presisi.
                 col_kiri, col_tengah, col_kanan = st.columns([1, 2, 1])
                 with col_tengah:
-                    df_alokasi = df_port.groupby('Kelas Aset')['Nilai Total (IDR)'].sum().reset_index()
+                    df_alokasi = df_port.groupby('kelas aset')['Nilai Total (IDR)'].sum().reset_index()
                     
                     fig_pie = px.pie(
                         df_alokasi, 
-                        names='Kelas Aset', 
+                        names='kelas aset', 
                         values='Nilai Total (IDR)', 
                         hole=0.4,
                         color_discrete_sequence=px.colors.qualitative.Pastel
@@ -953,8 +953,8 @@ else:
                 # --- MENERAPKAN STYLE KE TABEL ---
                 styled_port = df_port.style.map(color_return, subset=['Return (%)']).format({
                     'Jumlah Satuan': format_angka_pintar,
-                    'Harga Rata2': format_harga_pintar,
-                    'Harga Live': format_harga_pintar,
+                    'harga Rata2': format_harga_pintar,
+                    'harga Live': format_harga_pintar,
                     'Nilai Total (IDR)': 'Rp {:,.0f}',
                     'Return (%)': '{:.2f}%'
                 })
@@ -1171,7 +1171,7 @@ else:
             except:
                 kurs_idr = 15500.0 # Fallback
                 
-            for (kelas, ticker), group in df_inv.groupby(['Kelas Aset', 'Ticker']):
+            for (kelas, ticker), group in df_inv.groupby(['kelas aset', 'Ticker']):
                 total_beli = group[group['Action'] == 'Buy']['Jumlah'].sum()
                 total_jual = group[group['Action'] == 'Sell']['Jumlah'].sum()
                 qty_sekarang = total_beli - total_jual
@@ -1179,7 +1179,7 @@ else:
                 if qty_sekarang > 0:
                     # Cari harga beli rata-rata
                     df_beli = group[group['Action'] == 'Buy']
-                    avg_price = (df_beli['Harga'] * df_beli['Jumlah']).sum() / df_beli['Jumlah'].sum() if not df_beli.empty else 0
+                    avg_price = (df_beli['harga'] * df_beli['Jumlah']).sum() / df_beli['Jumlah'].sum() if not df_beli.empty else 0
                     
                     # Tarik harga live
                     current_price = avg_price
