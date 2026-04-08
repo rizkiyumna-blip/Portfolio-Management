@@ -819,17 +819,17 @@ else:
             total_nilai_semua_idr = 0.0
             
             # Mengelompokkan berdasarkan kelas aset dan Ticker
-            for (kelas, ticker), group in df_inv.groupby(['kelas aset', 'Ticker']):
+            for (kelas, ticker), group in df_inv.groupby(['kelas_aset', 'ticker']):
                 # Menghitung sisa barang (Buy - Sell)
-                total_beli = group[group['Action'] == 'Buy']['Jumlah'].sum()
-                total_jual = group[group['Action'] == 'Sell']['Jumlah'].sum()
+                total_beli = group[group['action'] == 'Buy']['jumlah'].sum()
+                total_jual = group[group['action'] == 'Sell']['jumlah'].sum()
                 qty_sekarang = total_beli - total_jual
                 
                 if qty_sekarang > 0:
                     # Menghitung harga Beli Rata-Rata (Weighted Average)
-                    df_beli = group[group['Action'] == 'Buy']
+                    df_beli = group[group['action'] == 'Buy']
                     if not df_beli.empty:
-                        avg_price = (df_beli['harga'] * df_beli['Jumlah']).sum() / df_beli['Jumlah'].sum()
+                        avg_price = (df_beli['harga'] * df_beli['jumlah']).sum() / df_beli['jumlah'].sum()
                     else:
                         avg_price = 0
                     
