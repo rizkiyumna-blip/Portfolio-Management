@@ -11,7 +11,7 @@ import yfinance as yf
 from streamlit_option_menu import option_menu
 from st_supabase_connection import SupabaseConnection
 
-# --- 1. INI HARUS JADI PERINTAH 'st' PERTAMA ---
+
 st.set_page_config(page_title="Personal Portfolio", layout="wide")
 
 conn = st.connection("supabase", type=SupabaseConnection)
@@ -45,7 +45,6 @@ def logout():
     st.session_state.user_info = None
     st.rerun()
 
-# --- PREMIUM DARK UI ---
 # --- WHITE MODERN FINTECH UI ---
 st.markdown("""
     <style>
