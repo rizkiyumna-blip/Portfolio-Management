@@ -1,0 +1,8 @@
+streamlit
+pandas
+plotly
+yfinance
+feedparser
+requests
+st-supabase-connection
+streamlit-option-menu
