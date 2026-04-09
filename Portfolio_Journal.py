@@ -285,7 +285,7 @@ else:
     # BAGIAN 1: TRADING (Kode Sama Seperti Sebelumnya)
     # ==========================================
     if menu == "Dashboard Trading":
-        st.title("📈 Dashboard Performa Trading")
+        st.title("Dashboard Performa Trading")
         
         df_trades = st.session_state.trades
         df_cash = st.session_state.cash
@@ -649,7 +649,7 @@ else:
         NOTE_FILE = "strategy_notes.txt"
         
         # Template default yang relevan dengan parameter analisis teknikalmu
-        default_notes = """### 📋 Checklist Breakout & Fase Markup
+        default_notes = """### 📋 CONTOH Checklist Breakout & Fase Markup
         
     1. **Analisis Fase Konsolidasi:**
     - [ ] Apakah durasi konsolidasi sudah cukup matang?
@@ -762,7 +762,7 @@ else:
         # FITUR HAPUS DATA INVESTASI (FULL WIDTH)
         # ==========================================
         st.markdown("<hr style='margin-top: 40px; margin-bottom: 20px;'>", unsafe_allow_html=True)
-        st.subheader("🗑️ Manajemen Data Investasi")
+        st.subheader("Manajemen Data Investasi")
         
         df_inv_edit = st.session_state.investing
         if not df_inv_edit.empty:
@@ -1077,7 +1077,7 @@ else:
                 # ==========================================
                 # 2. GRAFIK PIE DI BAWAH (TENGAH)
                 # ==========================================
-                st.subheader("🥧 Persentase Alokasi Bobot")
+                st.subheader("Persentase Alokasi")
                 
                 # Trik 3 kolom untuk menjepit grafik di tengah
                 col_kiri, col_tengah, col_kanan = st.columns([1, 2, 1])
@@ -1412,7 +1412,7 @@ else:
                 st.error(f"Gagal menarik data berita. Error: {e}")
 
     elif menu == "Live Market Overview":
-        st.title("🌍 Live Market Overview & Macro Data")
+        st.title("Live Market Overview & Macro Data")
         st.write("Pantau indikator pasar finansial dan data makroekonomi global untuk analisis Top-Down.")
         
         st.markdown("<hr style='margin-top: 10px; margin-bottom: 20px;'>", unsafe_allow_html=True)
@@ -1420,7 +1420,7 @@ else:
         # ==========================================
         # 1. MENARIK DATA MAKRO (JALUR ALPHA VANTAGE)
         # ==========================================
-        st.subheader("🏛️ Indikator Makroekonomi Global (US Benchmark)")
+        st.subheader("Indikator Makroekonomi Global (US Benchmark)")
         
         # 🔴 GANTI TEKS DI BAWAH INI DENGAN API KEY MILIKMU 🔴
         ALPHA_VANTAGE_API_KEY = "5STW7XG1P4VQ7GVN"
@@ -1440,7 +1440,7 @@ else:
                 
                 if 'Information' in cek_limit or 'Note' in cek_limit:
                     # JIKA KENA LIMIT API:
-                    st.warning("⚠️ Limit API Alpha Vantage harianmu habis. Menggunakan data terakhir yang tersimpan di sistem.")
+                    st.warning("⚠️ Limit Alpha Vantage harianmu habis. Menggunakan data terakhir yang tersimpan di sistem.")
                     
                     # Baca buku catatan (file JSON) jika ada
                     if os.path.exists(cache_file):
@@ -1494,7 +1494,7 @@ else:
         # ==========================================
         # 2. MENARIK DATA PASAR SAHAM & KRIPTO (Yahoo Finance)
         # ==========================================
-        st.subheader("📈 Pergerakan Aset Finansial")
+        st.subheader("Pergerakan Aset Finansial")
         
         market_tickers = {
             "🇮🇩 IHSG (Indonesia)": "^JKSE",
@@ -1540,7 +1540,7 @@ else:
         # ==========================================
         # 3. ROBO-ADVISOR: ANALISIS TOP-DOWN OTOMATIS
         # ==========================================
-        st.subheader("🤖 Analisis Makro & Sentimen Otomatis")
+        st.subheader("Analisis Makro & Sentimen")
         
         if macro_data_dict and market_data:
             kesimpulan = []
@@ -1595,7 +1595,7 @@ else:
         # ==========================================
         st.markdown("<hr style='margin-top: 40px; margin-bottom: 30px;'>", unsafe_allow_html=True)
         
-        st.subheader("🤖 AI Sentiment Trading Agent")
+        st.subheader("AI Trading Agent")
         st.write("Pindai ratusan artikel berita finansial global secara real-time untuk mendapatkan rekomendasi arah pergerakan harga spesifik pada satu aset.")
         
         col_input, col_info = st.columns([1, 1.5])
@@ -1669,7 +1669,7 @@ else:
                             else:
                                 st.warning(f"Agen tidak menemukan berita yang cukup relevan untuk {ticker_input} saat ini.")
                         else:
-                            st.warning("Data tidak ditemukan atau limit harian API Alpha Vantage gratisanmu mungkin sudah habis. Coba lagi besok!")
+                            st.warning("Data tidak ditemukan atau limit Alpha Vantage mungkin sudah habis. Coba lagi besok!")
                             
                     except Exception as e:
                         st.error(f"Terjadi kesalahan teknis pada Agen: {e}")
