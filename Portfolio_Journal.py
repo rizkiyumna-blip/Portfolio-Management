@@ -58,29 +58,34 @@ if not st.session_state.get("logged_in"):
             pass
 
 # ==========================================
-# 4. HALAMAN LOGIN UI (DESAIN PREMIUM & AUTO-REDIRECT)
+# HALAMAN LOGIN UI (DESAIN PREMIUM)
 # ==========================================
 if not st.session_state.logged_in:
-    with login_container.container():
-        st.markdown("<br><br>", unsafe_allow_html=True) 
-        
-        # --- LOGO ---
-        logo_kiri, logo_tengah, logo_kanan = st.columns([1, 0.5, 1])
-        with logo_tengah:
-            try:
-                st.image("logo.png", use_container_width=True) 
-            except FileNotFoundError:
-                pass
+    st.markdown("<br><br>", unsafe_allow_html=True) 
+    
+    # --- 1. BARIS KHUSUS LOGO ---
+    # Rasio [1, 0.5, 1] membuat kolom tengah lebih kecil agar logo tidak raksasa
+    logo_kiri, logo_tengah, logo_kanan = st.columns([1, 0.3, 1])
+    with logo_tengah:
+        try:
+            # Pastikan nama file "logo.png" sudah sesuai dengan yang ada di folder Anda
+            st.image("logo.png", use_container_width=True) 
+        except FileNotFoundError:
+            pass # Abaikan jika gambar belum dimasukkan
             
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # --- FORM LOGIN ---
+   # --- 2. BARIS KHUSUS FORM LOGIN ---
     col1, col2, col3 = st.columns([1, 1.2, 1]) 
+    
     with col2:
+        # 1. FORM LOGIN DI ATAS
         with st.form("login_form"):
             st.markdown("<h4 style='text-align: center; color: #1E293B;'>Sign In</h4>", unsafe_allow_html=True)
+            
             email_log = st.text_input("✉️ Alamat Email", placeholder="nama@email.com")
             pass_log = st.text_input("🔑 Kata Sandi", type="password", placeholder="••••••••")
+            
             st.markdown("<br>", unsafe_allow_html=True) 
             
             submit_log = st.form_submit_button("Masuk ke Dashboard ➔", use_container_width=True)
@@ -88,21 +93,14 @@ if not st.session_state.logged_in:
             if submit_log:
                 res = login(email_log, pass_log)
                 if res:
-                    st.success("✅ Login Berhasil! Mengalihkan ke Dashboard...")
+                    st.success("✅ Autentikasi Berhasil! Memuat dasbor...")
                     st.session_state.logged_in = True
                     st.session_state.user_info = res.user
-                    
-                    # --- JURUS PAMUNGKAS: INJEKSI JAVASCRIPT ---
-                    # Menunggu 1.5 detik agar Cookie tersimpan aman, lalu otomatis refresh layar!
-                    st.components.v1.html(
-                        "<script>setTimeout(function(){window.parent.location.reload();}, 1500);</script>",
-                        height=0
-                    )
-                    st.stop() # Hentikan kode di sini agar dashboard tidak langsung menumpuk di bawah
         
+        # Memberikan sedikit jarak antara form dan kotak info
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # --- KOTAK INFO ---
+        # 2. KOTAK INFO DI BAWAH
         st.markdown("""
             <div style="text-align: center; padding: 20px; background-color: #F8FAFC; border-radius: 12px; border: 1px solid #E2E8F0; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                 <h3 style="color: #0F172A; margin-bottom: 8px; font-family: sans-serif;">🔐 Akses Terbatas</h3>
@@ -112,11 +110,9 @@ if not st.session_state.logged_in:
                 </p>
             </div>
         """, unsafe_allow_html=True)
-                
-    # Hentikan semua proses jika belum sukses login
+                    
     if not st.session_state.logged_in:
         st.stop()
-login_container.empty()
         
 # --- WHITE MODERN FINTECH UI ---
 st.markdown("""
@@ -213,6 +209,38 @@ if st.session_state.get('logged_in'):
         st.session_state.cash = fetch_supabase_data("cashflow")
     if 'investing' not in st.session_state:
         st.session_state.investing = fetch_supabase_data("investing")
+
+# --- LOGIKA TAMPILAN UTAMA ---
+if not st.session_state.logged_in:
+    # HALAMAN LOGIN & REGISTER
+    st.title("Portfolio Management")
+    st.subheader("Silakan masuk untuk membangun portfolio investasi Anda.")
+    
+    tab_login, tab_signup = st.tabs(["Login", "Buat Akun Baru"])
+    
+    with tab_login:
+        email_in = st.text_input("Email", key="login_email")
+        pass_in = st.text_input("Password", type="password", key="login_pass")
+        if st.button("Login", use_container_width=True):
+            res = login(email_in, pass_in)
+            if res:
+                st.session_state.logged_in = True
+                st.session_state.user_info = res.user
+                st.success("Login Berhasil! Mengalihkan...")
+                st.rerun()
+            else:
+                st.error("Email atau Password salah.")
+
+    with tab_signup:
+        st.info("Setelah mendaftar, silakan cek email Anda untuk konfirmasi (jika fitur email aktif di Supabase).")
+        email_up = st.text_input("Email Baru", key="signup_email")
+        pass_up = st.text_input("Password Baru", type="password", key="signup_pass")
+        if st.button("Daftar Sekarang", use_container_width=True):
+            res = login(email_up, pass_up)
+            if res:
+                st.success("Akun berhasil dibuat! Silakan coba login.")
+            else:
+                st.error("Gagal membuat akun. Pastikan format email benar dan password minimal 6 karakter.")
 
 else:
     # --- AREA DALAM (Setelah Login) ---
