@@ -58,30 +58,27 @@ if not st.session_state.get("logged_in"):
             pass
 
 # ==========================================
-# 4. HALAMAN LOGIN UI (DESAIN PREMIUM)
+# HALAMAN LOGIN UI (DESAIN PREMIUM)
 # ==========================================
 if not st.session_state.logged_in:
-    # Memberikan sedikit ruang kosong dari atas agar lebih proporsional
     st.markdown("<br><br>", unsafe_allow_html=True) 
     
-    # Mengubah rasio kolom menjadi [1, 1.2, 1] agar kotak form lebih ramping di tengah
-   col1, col2, col3 = st.columns([1, 1.2, 1]) 
+    # --- 1. BARIS KHUSUS LOGO ---
+    # Rasio [1, 0.5, 1] membuat kolom tengah lebih kecil agar logo tidak raksasa
+    logo_kiri, logo_tengah, logo_kanan = st.columns([1, 0.5, 1])
+    with logo_tengah:
+        try:
+            # Pastikan nama file "logo.png" sudah sesuai dengan yang ada di folder Anda
+            st.image("logo.png", use_container_width=True) 
+        except FileNotFoundError:
+            pass # Abaikan jika gambar belum dimasukkan
+            
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # --- 2. BARIS KHUSUS FORM LOGIN ---
+    col1, col2, col3 = st.columns([1, 1.2, 1]) 
     
     with col2:
-        # --- TRIK MENAMPILKAN LOGO DI TENGAH ---
-        # Kita buat sub-kolom agar logo tidak raksasa memenuhi layar
-        logo_kiri, logo_tengah, logo_kanan = st.columns([1, 1.5, 1])
-        with logo_tengah:
-            try:
-                # Ganti "logo.png" dengan nama file Anda yang sebenarnya
-                st.image("logo.png", use_container_width=True) 
-            except FileNotFoundError:
-                pass # Abaikan jika file gambar belum diupload (tidak akan error)
-        
-        # Memberi sedikit jarak antara logo dan kotak teks
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        # --- KOTAK INFO ---
         st.markdown("""
             <div style="text-align: center; padding: 20px; background-color: #F8FAFC; border-radius: 12px; border: 1px solid #E2E8F0; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                 <h3 style="color: #0F172A; margin-bottom: 8px; font-family: sans-serif;">🔐 Akses Terbatas</h3>
@@ -92,20 +89,14 @@ if not st.session_state.logged_in:
             </div>
         """, unsafe_allow_html=True)
         
-        # ... (lanjutkan dengan blok with st.form("login_form"): seperti sebelumnya)
-        
-        # Mendesain ulang form input
         with st.form("login_form"):
             st.markdown("<h4 style='text-align: center; color: #1E293B;'>Sign In</h4>", unsafe_allow_html=True)
             
-            # Menambahkan placeholder agar terlihat lebih modern
             email_log = st.text_input("✉️ Alamat Email", placeholder="nama@email.com")
             pass_log = st.text_input("🔑 Kata Sandi", type="password", placeholder="••••••••")
             
-            # Memberikan jarak sebelum tombol
             st.markdown("<br>", unsafe_allow_html=True) 
             
-            # Tombol login dengan panah
             submit_log = st.form_submit_button("Masuk ke Dashboard ➔", use_container_width=True)
             
             if submit_log:
@@ -115,7 +106,6 @@ if not st.session_state.logged_in:
                     st.session_state.logged_in = True
                     st.session_state.user_info = res.user
                     
-    # Hentikan proses jika belum login
     if not st.session_state.logged_in:
         st.stop()
         
