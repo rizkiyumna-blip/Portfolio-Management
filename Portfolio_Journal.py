@@ -57,26 +57,50 @@ if not st.session_state.get("logged_in"):
         except Exception:
             pass
 
+# ==========================================
+# 4. HALAMAN LOGIN UI (DESAIN PREMIUM)
+# ==========================================
 if not st.session_state.logged_in:
-    st.title("💼 Jurnal Portofolio & Trading")
+    # Memberikan sedikit ruang kosong dari atas agar lebih proporsional
+    st.markdown("<br><br>", unsafe_allow_html=True) 
     
-    col1, col2, col3 = st.columns([1, 2, 1])
+    # Mengubah rasio kolom menjadi [1, 1.2, 1] agar kotak form lebih ramping di tengah
+    col1, col2, col3 = st.columns([1, 1.2, 1]) 
+    
     with col2:
-        st.info("⚠️ **Sistem Tertutup (Invite-Only)**\n\nSilakan masuk menggunakan Email dan Password yang telah diberikan.")
+        # Mengganti kotak st.info standar dengan desain kotak khusus (HTML/CSS)
+        st.markdown("""
+            <div style="text-align: center; padding: 20px; background-color: #F8FAFC; border-radius: 12px; border: 1px solid #E2E8F0; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                <h3 style="color: #0F172A; margin-bottom: 8px; font-family: sans-serif;">🔐 Akses Terbatas</h3>
+                <p style="color: #64748B; font-size: 14px; margin-top: 0; line-height: 1.5;">
+                    Jurnal Portofolio ini bersifat <b>Invite-Only</b>.<br>
+                    Silakan masuk menggunakan kredensial yang telah diberikan.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
         
+        # Mendesain ulang form input
         with st.form("login_form"):
-            st.subheader("Login Access")
-            email_log = st.text_input("Email")
-            pass_log = st.text_input("Password", type="password")
-            submit_log = st.form_submit_button("Masuk / Login", use_container_width=True)
+            st.markdown("<h4 style='text-align: center; color: #1E293B;'>Sign In</h4>", unsafe_allow_html=True)
+            
+            # Menambahkan placeholder agar terlihat lebih modern
+            email_log = st.text_input("✉️ Alamat Email", placeholder="nama@email.com")
+            pass_log = st.text_input("🔑 Kata Sandi", type="password", placeholder="••••••••")
+            
+            # Memberikan jarak sebelum tombol
+            st.markdown("<br>", unsafe_allow_html=True) 
+            
+            # Tombol login dengan panah
+            submit_log = st.form_submit_button("Masuk ke Dashboard ➔", use_container_width=True)
             
             if submit_log:
-                res = login(email_log, pass_log) # Karena 'def login' ada di atas, kode ini tidak akan error lagi
+                res = login(email_log, pass_log)
                 if res:
-                    st.success("✅ Login Berhasil! Memuat dasbor...")
+                    st.success("✅ Autentikasi Berhasil! Memuat dasbor...")
                     st.session_state.logged_in = True
                     st.session_state.user_info = res.user
                     
+    # Hentikan proses jika belum login
     if not st.session_state.logged_in:
         st.stop()
         
