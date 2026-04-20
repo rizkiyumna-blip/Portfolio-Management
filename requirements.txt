@@ -6,3 +6,4 @@ feedparser
 requests
 st-supabase-connection
 streamlit-option-menu
+extra-streamlit-components
