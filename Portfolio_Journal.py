@@ -11,6 +11,40 @@ import yfinance as yf
 from streamlit_option_menu import option_menu
 from st_supabase_connection import SupabaseConnection
 
+
+st.set_page_config(page_title="Personal Portfolio", layout="wide")
+
+conn = st.connection("supabase", type=SupabaseConnection)
+
+# 2. Inisialisasi Session State untuk Login
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "user_info" not in st.session_state:
+    st.session_state.user_info = None
+
+# Fungsi Login
+def sign_up(email, password):
+    try:
+        res = conn.auth.sign_up({"email": email, "password": password})
+        return res
+    except Exception as e:
+        st.error(f"Gagal Daftar: {e}")
+        return None
+
+def login(email, password):
+    try:
+        res = conn.auth.sign_in_with_password({"email": email, "password": password})
+        return res
+    except Exception as e:
+        st.error(f"Gagal Login: {e}")
+        return None
+
+def logout():
+    conn.auth.sign_out()
+    st.session_state.logged_in = False
+    st.session_state.user_info = None
+    st.rerun()
+
 # --- WHITE MODERN FINTECH UI ---
 st.markdown("""
     <style>
@@ -728,7 +762,7 @@ else:
         # FITUR HAPUS DATA INVESTASI (FULL WIDTH)
         # ==========================================
         st.markdown("<hr style='margin-top: 40px; margin-bottom: 20px;'>", unsafe_allow_html=True)
-        st.subheader("Manajemen Data Investasi")
+        st.subheader("Manajemen Data (Hapus Baris)")
         
         df_inv_edit = st.session_state.investing
         if not df_inv_edit.empty:
