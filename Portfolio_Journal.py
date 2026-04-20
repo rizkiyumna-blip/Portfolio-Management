@@ -17,10 +17,46 @@ st.set_page_config(page_title="Personal Portfolio", layout="wide")
 
 conn = st.connection("supabase", type=SupabaseConnection)
 
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "user_info" not in st.session_state:
+    st.session_state.user_info = None
+
+def login(email, password):
+    try:
+        res = conn.auth.sign_in_with_password({"email": email, "password": password})
+        # Simpan token ke browser selama 30 hari
+        controller.set('sb_access', res.session.access_token, max_age=2592000)
+        controller.set('sb_refresh', res.session.refresh_token, max_age=2592000)
+        return res
+    except Exception as e:
+        st.error(f"Gagal Login: Email atau Password salah.")
+        return None
+
+def logout():
+    conn.auth.sign_out()
+    controller.remove('sb_access')
+    controller.remove('sb_refresh')
+    st.session_state.logged_in = False
+    st.session_state.user_info = None
+    st.rerun()
+    
 # Inisialisasi Pengelola Cookie
 controller = CookieController()
 
-# --- HALAMAN LOGIN (SISTEM TERTUTUP) ---
+if not st.session_state.get("logged_in"):
+    acc_token = controller.get('sb_access')
+    ref_token = controller.get('sb_refresh')
+    
+    if acc_token and ref_token:
+        try:
+            res = conn.auth.set_session(acc_token, ref_token)
+            st.session_state.logged_in = True
+            st.session_state.user_info = res.user
+            st.rerun()
+        except Exception:
+            pass
+
 if not st.session_state.logged_in:
     st.title("💼 Jurnal Portofolio & Trading")
     
@@ -35,21 +71,15 @@ if not st.session_state.logged_in:
             submit_log = st.form_submit_button("Masuk / Login", use_container_width=True)
             
             if submit_log:
-                res = login(email_log, pass_log) # Baris ini memanggil perintah simpan Cookie
+                res = login(email_log, pass_log) # Karena 'def login' ada di atas, kode ini tidak akan error lagi
                 if res:
                     st.success("✅ Login Berhasil! Memuat dasbor...")
                     st.session_state.logged_in = True
                     st.session_state.user_info = res.user
-                    # ❌ KITA MENGHAPUS st.rerun() DARI SINI
                     
-    # Hentikan proses HANYA JIKA status masih belum login
-    # Jika sudah berhasil login di atas, st.stop() akan dilewati 
-    # dan aplikasi akan langsung menampilkan Dashboard di bawahnya!
     if not st.session_state.logged_in:
-        st.stop() 
-
-# --- KODE DASHBOARD UTAMA BERADA DI BAWAH SINI ---
-
+        st.stop()
+        
 # --- WHITE MODERN FINTECH UI ---
 st.markdown("""
     <style>
