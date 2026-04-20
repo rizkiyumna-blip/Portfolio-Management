@@ -20,51 +20,35 @@ conn = st.connection("supabase", type=SupabaseConnection)
 # Inisialisasi Pengelola Cookie
 controller = CookieController()
 
-# --- SISTEM AUTO-LOGIN (MEMBACA COOKIE) ---
-if not st.session_state.get("logged_in"):
-    # Coba cari 'Kunci Serep' di browser
-    acc_token = controller.get('sb_access')
-    ref_token = controller.get('sb_refresh')
+# --- HALAMAN LOGIN (SISTEM TERTUTUP) ---
+if not st.session_state.logged_in:
+    st.title("💼 Jurnal Portofolio & Trading")
     
-    if acc_token and ref_token:
-        try:
-            # Gunakan kunci serep untuk masuk ke Supabase secara diam-diam
-            res = conn.auth.set_session(acc_token, ref_token)
-            st.session_state.logged_in = True
-            st.session_state.user_info = res.user
-            st.rerun() # Refresh layar agar langsung masuk Dashboard
-        except Exception:
-            # Jika kunci sudah hangus, diamkan saja agar user login manual
-            pass
-
-# 2. Inisialisasi Session State untuk Login
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-if "user_info" not in st.session_state:
-    st.session_state.user_info = None
-
-# Fungsi Login
-def login(email, password):
-    try:
-        res = conn.auth.sign_in_with_password({"email": email, "password": password})
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.info("⚠️ **Sistem Tertutup (Invite-Only)**\n\nSilakan masuk menggunakan Email dan Password yang telah diberikan.")
         
-        controller.set('sb_access', res.session.access_token, max_age=2592000)
-        controller.set('sb_refresh', res.session.refresh_token, max_age=2592000)
-        
-        return res
-    except Exception as e:
-        st.error(f"Gagal Login: Email atau Password salah.")
-        return None
+        with st.form("login_form"):
+            st.subheader("Login Access")
+            email_log = st.text_input("Email")
+            pass_log = st.text_input("Password", type="password")
+            submit_log = st.form_submit_button("Masuk / Login", use_container_width=True)
+            
+            if submit_log:
+                res = login(email_log, pass_log) # Baris ini memanggil perintah simpan Cookie
+                if res:
+                    st.success("✅ Login Berhasil! Memuat dasbor...")
+                    st.session_state.logged_in = True
+                    st.session_state.user_info = res.user
+                    # ❌ KITA MENGHAPUS st.rerun() DARI SINI
+                    
+    # Hentikan proses HANYA JIKA status masih belum login
+    # Jika sudah berhasil login di atas, st.stop() akan dilewati 
+    # dan aplikasi akan langsung menampilkan Dashboard di bawahnya!
+    if not st.session_state.logged_in:
+        st.stop() 
 
-def logout():
-    conn.auth.sign_out()
-    
-    controller.remove('sb_access')
-    controller.remove('sb_refresh')
-    
-    st.session_state.logged_in = False
-    st.session_state.user_info = None
-    st.rerun()
+# --- KODE DASHBOARD UTAMA BERADA DI BAWAH SINI ---
 
 # --- WHITE MODERN FINTECH UI ---
 st.markdown("""
