@@ -58,62 +58,62 @@ if not st.session_state.get("logged_in"):
             pass
 
 # ==========================================
-# 4. HALAMAN LOGIN UI (DESAIN PREMIUM)
+# 4. HALAMAN LOGIN UI (DESAIN PREMIUM & AUTO-REDIRECT)
 # ==========================================
-# 1. Membuat 'Kardus Kosong'
-login_placeholder = st.empty() 
-
 if not st.session_state.logged_in:
-    # 2. Memasukkan semua elemen ke dalam Kardus
-    with login_placeholder.container(): 
-        st.markdown("<br><br>", unsafe_allow_html=True) 
+    st.markdown("<br><br>", unsafe_allow_html=True) 
+    
+    # --- LOGO ---
+    logo_kiri, logo_tengah, logo_kanan = st.columns([1, 0.5, 1])
+    with logo_tengah:
+        try:
+            st.image("logo.png", use_container_width=True) 
+        except FileNotFoundError:
+            pass
+            
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # --- FORM LOGIN ---
+    col1, col2, col3 = st.columns([1, 1.2, 1]) 
+    with col2:
+        with st.form("login_form"):
+            st.markdown("<h4 style='text-align: center; color: #1E293B;'>Sign In</h4>", unsafe_allow_html=True)
+            email_log = st.text_input("✉️ Alamat Email", placeholder="nama@email.com")
+            pass_log = st.text_input("🔑 Kata Sandi", type="password", placeholder="••••••••")
+            st.markdown("<br>", unsafe_allow_html=True) 
+            
+            submit_log = st.form_submit_button("Masuk ke Dashboard ➔", use_container_width=True)
+            
+            if submit_log:
+                res = login(email_log, pass_log)
+                if res:
+                    st.success("✅ Login Berhasil! Mengalihkan ke Dashboard...")
+                    st.session_state.logged_in = True
+                    st.session_state.user_info = res.user
+                    
+                    # --- JURUS PAMUNGKAS: INJEKSI JAVASCRIPT ---
+                    # Menunggu 1.5 detik agar Cookie tersimpan aman, lalu otomatis refresh layar!
+                    st.components.v1.html(
+                        "<script>setTimeout(function(){window.parent.location.reload();}, 1500);</script>",
+                        height=0
+                    )
+                    st.stop() # Hentikan kode di sini agar dashboard tidak langsung menumpuk di bawah
         
-        # --- LOGO ---
-        logo_kiri, logo_tengah, logo_kanan = st.columns([1, 0.5, 1])
-        with logo_tengah:
-            try:
-                st.image("logo.png", use_container_width=True) 
-            except FileNotFoundError:
-                pass
-                
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # --- FORM LOGIN ---
-        col1, col2, col3 = st.columns([1, 1.2, 1]) 
-        with col2:
-            with st.form("login_form"):
-                st.markdown("<h4 style='text-align: center; color: #1E293B;'>Sign In</h4>", unsafe_allow_html=True)
-                email_log = st.text_input("✉️ Alamat Email", placeholder="nama@email.com")
-                pass_log = st.text_input("🔑 Kata Sandi", type="password", placeholder="••••••••")
-                st.markdown("<br>", unsafe_allow_html=True) 
+        # --- KOTAK INFO ---
+        st.markdown("""
+            <div style="text-align: center; padding: 20px; background-color: #F8FAFC; border-radius: 12px; border: 1px solid #E2E8F0; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                <h3 style="color: #0F172A; margin-bottom: 8px; font-family: sans-serif;">🔐 Akses Terbatas</h3>
+                <p style="color: #64748B; font-size: 14px; margin-top: 0; line-height: 1.5;">
+                    Jurnal Portofolio ini bersifat <b>Invite-Only</b>.<br>
+                    Silakan masuk menggunakan kredensial yang telah diberikan.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
                 
-                submit_log = st.form_submit_button("Masuk ke Dashboard ➔", use_container_width=True)
-                
-                if submit_log:
-                    res = login(email_log, pass_log)
-                    if res:
-                        # Kita hapus tulisan st.success agar bersih
-                        st.session_state.logged_in = True
-                        st.session_state.user_info = res.user
-            
-            st.markdown("<br>", unsafe_allow_html=True)
-            
-            # --- KOTAK INFO ---
-            st.markdown("""
-                <div style="text-align: center; padding: 20px; background-color: #F8FAFC; border-radius: 12px; border: 1px solid #E2E8F0; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-                    <h3 style="color: #0F172A; margin-bottom: 8px; font-family: sans-serif;">🔐 Akses Terbatas</h3>
-                    <p style="color: #64748B; font-size: 14px; margin-top: 0; line-height: 1.5;">
-                        Jurnal Portofolio ini bersifat <b>Invite-Only</b>.<br>
-                        Silakan masuk menggunakan kredensial yang telah diberikan.
-                    </p>
-                </div>
-            """, unsafe_allow_html=True)
-                    
-    # 3. Logika Penghancur Kardus
-    if not st.session_state.logged_in:
-        st.stop() # Jika masih gagal login, berhenti di sini
-    else:
-        login_placeholder.empty() # JIKA BERHASIL LOGIN: BUANG KARDUSNYA!
+    # Hentikan semua proses jika belum sukses login
+    st.stop()
         
 # --- WHITE MODERN FINTECH UI ---
 st.markdown("""
