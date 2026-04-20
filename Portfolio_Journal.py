@@ -16,27 +16,14 @@ st.set_page_config(page_title="Personal Portfolio", layout="wide")
 
 conn = st.connection("supabase", type=SupabaseConnection)
 
-# 2. Inisialisasi Session State untuk Login
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-if "user_info" not in st.session_state:
-    st.session_state.user_info = None
-
-# Fungsi Login
-def sign_up(email, password):
-    try:
-        res = conn.auth.sign_up({"email": email, "password": password})
-        return res
-    except Exception as e:
-        st.error(f"Gagal Daftar: {e}")
-        return None
-
+# --- FUNGSI AUTENTIKASI ---
 def login(email, password):
     try:
         res = conn.auth.sign_in_with_password({"email": email, "password": password})
         return res
     except Exception as e:
-        st.error(f"Gagal Login: {e}")
+        # Pesan error disamarkan agar hacker tidak tahu masalah spesifiknya
+        st.error("❌ Gagal Login: Email atau Password salah, atau akun belum terdaftar.")
         return None
 
 def logout():
@@ -44,6 +31,30 @@ def logout():
     st.session_state.logged_in = False
     st.session_state.user_info = None
     st.rerun()
+
+# --- HALAMAN LOGIN (SISTEM TERTUTUP) ---
+if not st.session_state.logged_in:
+    st.title("💼 Jurnal Portofolio & Trading")
+    
+    col1, col2, col3 = st.columns([1, 2, 1]) # Membuat form berada di tengah
+    with col2:
+        st.info("⚠️ **Sistem Tertutup (Invite-Only)**\n\nSilakan masuk menggunakan Email dan Password yang telah diberikan oleh Admin.")
+        
+        with st.form("login_form"):
+            st.subheader("Login Access")
+            email_log = st.text_input("Email")
+            pass_log = st.text_input("Password", type="password")
+            submit_log = st.form_submit_button("Masuk / Login", use_container_width=True)
+            
+            if submit_log:
+                res = login(email_log, pass_log)
+                if res:
+                    st.session_state.logged_in = True
+                    st.session_state.user_info = res.user
+                    st.rerun()
+                    
+    # Hentikan proses render aplikasi utama jika belum login
+    st.stop()
 
 # --- WHITE MODERN FINTECH UI ---
 st.markdown("""
