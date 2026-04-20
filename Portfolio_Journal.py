@@ -10,11 +10,32 @@ import plotly.express as px
 import yfinance as yf
 from streamlit_option_menu import option_menu
 from st_supabase_connection import SupabaseConnection
+from streamlit_cookies_controller import CookieController
 
 
 st.set_page_config(page_title="Personal Portfolio", layout="wide")
 
 conn = st.connection("supabase", type=SupabaseConnection)
+
+# Inisialisasi Pengelola Cookie
+controller = CookieController()
+
+# --- SISTEM AUTO-LOGIN (MEMBACA COOKIE) ---
+if not st.session_state.get("logged_in"):
+    # Coba cari 'Kunci Serep' di browser
+    acc_token = controller.get('sb_access')
+    ref_token = controller.get('sb_refresh')
+    
+    if acc_token and ref_token:
+        try:
+            # Gunakan kunci serep untuk masuk ke Supabase secara diam-diam
+            res = conn.auth.set_session(acc_token, ref_token)
+            st.session_state.logged_in = True
+            st.session_state.user_info = res.user
+            st.rerun() # Refresh layar agar langsung masuk Dashboard
+        except Exception:
+            # Jika kunci sudah hangus, diamkan saja agar user login manual
+            pass
 
 # 2. Inisialisasi Session State untuk Login
 if "logged_in" not in st.session_state:
@@ -23,24 +44,24 @@ if "user_info" not in st.session_state:
     st.session_state.user_info = None
 
 # Fungsi Login
-def sign_up(email, password):
-    try:
-        res = conn.auth.sign_up({"email": email, "password": password})
-        return res
-    except Exception as e:
-        st.error(f"Gagal Daftar: {e}")
-        return None
-
 def login(email, password):
     try:
         res = conn.auth.sign_in_with_password({"email": email, "password": password})
+        
+        controller.set('sb_access', res.session.access_token, max_age=2592000)
+        controller.set('sb_refresh', res.session.refresh_token, max_age=2592000)
+        
         return res
     except Exception as e:
-        st.error(f"Gagal Login: {e}")
+        st.error(f"Gagal Login: Email atau Password salah.")
         return None
 
 def logout():
     conn.auth.sign_out()
+    
+    controller.remove('sb_access')
+    controller.remove('sb_refresh')
+    
     st.session_state.logged_in = False
     st.session_state.user_info = None
     st.rerun()
@@ -167,7 +188,7 @@ if not st.session_state.logged_in:
         email_up = st.text_input("Email Baru", key="signup_email")
         pass_up = st.text_input("Password Baru", type="password", key="signup_pass")
         if st.button("Daftar Sekarang", use_container_width=True):
-            res = sign_up(email_up, pass_up)
+            res = login(email_up, pass_up)
             if res:
                 st.success("Akun berhasil dibuat! Silakan coba login.")
             else:
