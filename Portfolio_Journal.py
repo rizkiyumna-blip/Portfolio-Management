@@ -65,7 +65,7 @@ if not st.session_state.logged_in:
     
     # --- 1. BARIS KHUSUS LOGO ---
     # Rasio [1, 0.5, 1] membuat kolom tengah lebih kecil agar logo tidak raksasa
-    logo_kiri, logo_tengah, logo_kanan = st.columns([1, 0.5, 1])
+    logo_kiri, logo_tengah, logo_kanan = st.columns([1, 0.3, 1])
     with logo_tengah:
         try:
             # Pastikan nama file "logo.png" sudah sesuai dengan yang ada di folder Anda
