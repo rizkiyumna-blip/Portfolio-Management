@@ -61,15 +61,16 @@ if not st.session_state.get("logged_in"):
 # 4. HALAMAN LOGIN UI (DESAIN PREMIUM & AUTO-REDIRECT)
 # ==========================================
 if not st.session_state.logged_in:
-    st.markdown("<br><br>", unsafe_allow_html=True) 
-    
-    # --- LOGO ---
-    logo_kiri, logo_tengah, logo_kanan = st.columns([1, 0.5, 1])
-    with logo_tengah:
-        try:
-            st.image("logo.png", use_container_width=True) 
-        except FileNotFoundError:
-            pass
+    with login_container.container():
+        st.markdown("<br><br>", unsafe_allow_html=True) 
+        
+        # --- LOGO ---
+        logo_kiri, logo_tengah, logo_kanan = st.columns([1, 0.5, 1])
+        with logo_tengah:
+            try:
+                st.image("logo.png", use_container_width=True) 
+            except FileNotFoundError:
+                pass
             
     st.markdown("<br>", unsafe_allow_html=True)
     
@@ -113,7 +114,9 @@ if not st.session_state.logged_in:
         """, unsafe_allow_html=True)
                 
     # Hentikan semua proses jika belum sukses login
-    st.stop()
+    if not st.session_state.logged_in:
+        st.stop()
+login_container.empty()
         
 # --- WHITE MODERN FINTECH UI ---
 st.markdown("""
