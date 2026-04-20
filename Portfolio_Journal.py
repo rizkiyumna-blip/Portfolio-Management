@@ -210,38 +210,6 @@ if st.session_state.get('logged_in'):
     if 'investing' not in st.session_state:
         st.session_state.investing = fetch_supabase_data("investing")
 
-# --- LOGIKA TAMPILAN UTAMA ---
-if not st.session_state.logged_in:
-    # HALAMAN LOGIN & REGISTER
-    st.title("Portfolio Management")
-    st.subheader("Silakan masuk untuk membangun portfolio investasi Anda.")
-    
-    tab_login, tab_signup = st.tabs(["Login", "Buat Akun Baru"])
-    
-    with tab_login:
-        email_in = st.text_input("Email", key="login_email")
-        pass_in = st.text_input("Password", type="password", key="login_pass")
-        if st.button("Login", use_container_width=True):
-            res = login(email_in, pass_in)
-            if res:
-                st.session_state.logged_in = True
-                st.session_state.user_info = res.user
-                st.success("Login Berhasil! Mengalihkan...")
-                st.rerun()
-            else:
-                st.error("Email atau Password salah.")
-
-    with tab_signup:
-        st.info("Setelah mendaftar, silakan cek email Anda untuk konfirmasi (jika fitur email aktif di Supabase).")
-        email_up = st.text_input("Email Baru", key="signup_email")
-        pass_up = st.text_input("Password Baru", type="password", key="signup_pass")
-        if st.button("Daftar Sekarang", use_container_width=True):
-            res = login(email_up, pass_up)
-            if res:
-                st.success("Akun berhasil dibuat! Silakan coba login.")
-            else:
-                st.error("Gagal membuat akun. Pastikan format email benar dan password minimal 6 karakter.")
-
 else:
     # --- AREA DALAM (Setelah Login) ---
     with st.sidebar:
