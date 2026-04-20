@@ -12,15 +12,7 @@ from streamlit_option_menu import option_menu
 from st_supabase_connection import SupabaseConnection
 from streamlit_cookies_controller import CookieController
 
-
-st.set_page_config(page_title="Personal Portfolio", layout="wide")
-
 conn = st.connection("supabase", type=SupabaseConnection)
-
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-if "user_info" not in st.session_state:
-    st.session_state.user_info = None
 
 def login(email, password):
     try:
