@@ -65,10 +65,23 @@ if not st.session_state.logged_in:
     st.markdown("<br><br>", unsafe_allow_html=True) 
     
     # Mengubah rasio kolom menjadi [1, 1.2, 1] agar kotak form lebih ramping di tengah
-    col1, col2, col3 = st.columns([1, 1.2, 1]) 
+   col1, col2, col3 = st.columns([1, 1.2, 1]) 
     
     with col2:
-        # Mengganti kotak st.info standar dengan desain kotak khusus (HTML/CSS)
+        # --- TRIK MENAMPILKAN LOGO DI TENGAH ---
+        # Kita buat sub-kolom agar logo tidak raksasa memenuhi layar
+        logo_kiri, logo_tengah, logo_kanan = st.columns([1, 1.5, 1])
+        with logo_tengah:
+            try:
+                # Ganti "logo.png" dengan nama file Anda yang sebenarnya
+                st.image("logo.png", use_container_width=True) 
+            except FileNotFoundError:
+                pass # Abaikan jika file gambar belum diupload (tidak akan error)
+        
+        # Memberi sedikit jarak antara logo dan kotak teks
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # --- KOTAK INFO ---
         st.markdown("""
             <div style="text-align: center; padding: 20px; background-color: #F8FAFC; border-radius: 12px; border: 1px solid #E2E8F0; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                 <h3 style="color: #0F172A; margin-bottom: 8px; font-family: sans-serif;">🔐 Akses Terbatas</h3>
@@ -78,6 +91,8 @@ if not st.session_state.logged_in:
                 </p>
             </div>
         """, unsafe_allow_html=True)
+        
+        # ... (lanjutkan dengan blok with st.form("login_form"): seperti sebelumnya)
         
         # Mendesain ulang form input
         with st.form("login_form"):
